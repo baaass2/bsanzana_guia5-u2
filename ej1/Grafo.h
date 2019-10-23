@@ -5,7 +5,7 @@ using namespace std;
 
 /* Archivo .h con todas las cabeceras */
 typedef struct _Nodo {
-    int dato, fe;
+    int dato,fe;
     struct _Nodo *izq;
     struct _Nodo *der;
 } Nodo;

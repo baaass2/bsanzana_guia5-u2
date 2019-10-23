@@ -28,21 +28,21 @@ void menu(Arbol a){
 		if(opc == 1){
 			cout<< "Digite un numero: "; 
 			cin >> dato;
-			a.insertarNodo(arbol,dato);
+			arbol = a.insertarNodo(arbol,dato);
 		}
 		else if(opc == 2){
 			cout<< "Digite nodo a eliminar: "; 
 			cin >> dato;
-			a.eliminarNodo(arbol, dato);
+			arbol = a.eliminarNodo(arbol, dato);
 		}
 		else if(opc==3){
 			cout<< "Digite nodo a modificar: "; 
 			cin >> dato;
 			cout << "" <<endl;
-			a.eliminarNodo(arbol, dato);
+			arbol = a.eliminarNodo(arbol, dato);
 			cout<< "Digite valor del nodo nuevo: "; 
 			cin >> datoNuevo;
-			a.insertarNodo(arbol, datoNuevo);	
+			arbol = a.insertarNodo(arbol, datoNuevo);	
 		}
 		else if(opc==4){
 			cout<< "PREORDEN"<<endl;

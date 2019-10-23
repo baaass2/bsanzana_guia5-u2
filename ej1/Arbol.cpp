@@ -5,34 +5,105 @@
 Arbol::Arbol(){
 }
 
+int Arbol::altura(Nodo *N) { 
+	if (N == NULL){ 
+		return 0;
+	} 
+	return N->fe; 
+}
+
+int Arbol::max(int a, int b) { 
+	return (a > b)? a : b; 
+}
+
+int Arbol::getBalance(Nodo *N) { 
+	if (N == NULL){ 
+		return 0; 
+	}
+	return altura(N->izq) - altura(N->der); 
+} 
+
+Nodo* Arbol::rotacionDer(Nodo *y) { 
+	Nodo *x = y->izq; 
+	Nodo *T2 = x->der; 
+
+	x->der = y; 
+	y->izq = T2; 
+
+	y->fe = max(altura(y->izq), 
+					altura(y->der)) + 1; 
+	x->fe = max(altura(x->izq), 
+					altura(x->der)) + 1;  
+	return x; 
+} 
+
+Nodo* Arbol::rotacionIzq(Nodo *x) { 
+	Nodo *y = x->der; 
+	Nodo *T2 = y->izq; 
+
+	y->izq = x; 
+	x->der = T2; 
+	
+	x->fe = max(altura(x->izq),	 
+					altura(x->der)) + 1; 
+	y->fe = max(altura(y->izq), 
+					altura(y->der)) + 1;
+	return y; 
+}  
+
 Nodo* Arbol::crearNodo(int n){
 	Nodo *nuevoNodo = new Nodo();
 	
 	nuevoNodo->dato = n;
-	nuevoNodo->fe = 0;
+	nuevoNodo->fe = 1;
 	nuevoNodo->der = NULL;
 	nuevoNodo->izq = NULL;
 	
 	return nuevoNodo;
 }
 
-void Arbol::insertarNodo(Nodo *&arbol, int n){
-	if(arbol == NULL){
-		Nodo *nuevoNodo = crearNodo(n);
-		arbol = nuevoNodo;
-	}else{
-		int valorRaiz = arbol->dato;
-		
-		if(n < valorRaiz){
-			insertarNodo(arbol->izq, n);
-		}
-		else if(n > valorRaiz){
-			insertarNodo(arbol->der, n);		
-		}else{
-			cout<< "ERROR: DATO REPETIDO" <<endl;
-		}
-			
+Nodo* Arbol::insertarNodo(Nodo *node, int dato){
+	if (node == NULL) {
+		return crearNodo(dato);
+	} 
+
+	if (dato < node->dato){ 
+		node->izq = insertarNodo(node->izq, dato);
+	} 
+	else if (dato > node->dato){ 
+		node->der = insertarNodo(node->der, dato);
+	} 
+	else{
+		cout<< "ERROR DATO REPETIDO" <<endl;
+		return node;
 	}
+
+	node->fe = 1 + max(altura(node->izq), 
+						altura(node->der));
+	int balance = getBalance(node); 
+
+	// CASO II
+	if (balance > 1 && dato < node->izq->dato){ 
+		return rotacionDer(node); 
+	}
+
+	// CASO DD
+	if (balance < -1 && dato > node->der->dato){ 
+		return rotacionIzq(node); 
+	}
+
+	// CASO ID 
+	if (balance > 1 && dato > node->izq->dato){  
+		node->izq = rotacionIzq(node->izq); 
+		return rotacionDer(node); 
+	} 
+
+	// CASO DI 
+	if (balance < -1 && dato < node->der->dato) { 
+		node->der = rotacionDer(node->der); 
+		return rotacionIzq(node); 
+	} 
+	return node; 	
 }
 void Arbol::imprimirPreorden(Nodo *arbol){
 	if(arbol == NULL){
@@ -62,43 +133,10 @@ void Arbol::imprimirPosorden(Nodo *arbol){
 	}
 }
 Nodo* Arbol::buscarMinimo(Nodo *arbol){
-	if(arbol == NULL){
-		return NULL;
+	while(arbol->izq != NULL){
+		arbol = arbol->izq;
 	}
-	if(arbol->izq != NULL){
-		return buscarMinimo(arbol->izq);
-	}else{
-		return arbol;
-	}
-}
-void Arbol::eliminarNodo(Nodo *&nEliminar, int n){
-	
-	Nodo* nOtro = NULL;
-	Nodo* nAux_der = NULL;
-	Nodo* nAux_derMax = NULL;
-	
-	if(nEliminar != NULL){
-		if(n < nEliminar->dato){
-			eliminarNodo(nEliminar->izq, n);
-		}
-		else if(n > nEliminar->dato){
-			eliminarNodo(nEliminar->der, n);
-		}else{
-			nOtro = nEliminar;
-			if(nOtro->der == NULL){
-				nEliminar = nOtro->izq;
-			}
-			else if(nOtro->izq == NULL){
-				nEliminar = nOtro->der;
-			}
-			else{
-				reemplezar(nEliminar->izq, nOtro);
-			}
-		}
-	}
-	else{
-		cout<< "No se ha encontrado nodo." <<endl;
-	}
+	return arbol;
 }
 
 void Arbol::reemplezar(Nodo *&nEliminar, Nodo *&nOtro){
@@ -111,20 +149,74 @@ void Arbol::reemplezar(Nodo *&nEliminar, Nodo *&nOtro){
 		reemplezar(nEliminar->der, nOtro);
 	}
 }
-
-Nodo* Arbol::busqueda(Nodo *nEliminar, int n){
+Nodo* Arbol::eliminarNodo(Nodo *nEliminar, int dato){ 
+    
+    if (nEliminar == NULL){  
+        cout<< "No se ha encontrado el dato." <<endl;
+        return nEliminar;
+	}
 	
-	if(nEliminar == NULL){
-		cout<< "No se ha encontrado nodo." <<endl;
+    if(dato < nEliminar->dato){  
+        nEliminar->izq = eliminarNodo(nEliminar->izq, dato);
+	} 
+    else if(dato > nEliminar->dato){  
+        nEliminar->der = eliminarNodo(nEliminar->der, dato);
 	}
-	else if(n < nEliminar->dato){	
-		busqueda(nEliminar->izq, n);
-	}
-	else if(n > nEliminar->dato){
-		busqueda(nEliminar->der, n);
-	}else{
+    else{  
+        if((nEliminar->izq == NULL) || (nEliminar->der == NULL)){  
+            Nodo *temp = nEliminar->izq ?  
+                         nEliminar->izq :  
+                         nEliminar->der;  
+            if(temp == NULL){  
+                temp = nEliminar;  
+                nEliminar = NULL;  
+            }  
+            else{  
+				*nEliminar = *temp; 
+				free(temp);
+			}  
+        }  
+        else{  
+            Nodo* temp = buscarMinimo(nEliminar->der);  
+            nEliminar->dato = temp->dato;  
+            nEliminar->der = eliminarNodo(nEliminar->der, temp->dato);  
+        }  
+    }  
+    if(nEliminar == NULL){  
 		return nEliminar;
-	}
+	}  
+    nEliminar->fe = 1 + max(altura(nEliminar->izq),altura(nEliminar->der));  
+    
+    int balance = getBalance(nEliminar);  
+    
+  
+    // CASO II 
+    if (balance > 1 &&  
+        getBalance(nEliminar->izq) >= 0) {  
+        return rotacionDer(nEliminar);
+	}  
+  
+    // CASO ID 
+    if (balance > 1 &&  
+        getBalance(nEliminar->izq) < 0) {  
+        nEliminar->izq = rotacionIzq(nEliminar->izq);  
+        return rotacionDer(nEliminar);  
+    }  
+  
+    // CASO DD  
+    if (balance < -1 &&  
+        getBalance(nEliminar->der) <= 0) {  
+        return rotacionIzq(nEliminar);
+	}  
+  
+    // CASO DI  
+    if (balance < -1 &&  
+        getBalance(nEliminar->der) > 0) {  
+        nEliminar->der = rotacionDer(nEliminar->der);  
+        return rotacionIzq(nEliminar);  
+    }  
+  
+    return nEliminar;  
 }
 
 		
